@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Stuck Snack Retrieval 🥨🚨</title>
+  <meta name="description" content="A bag of chips hangs by 1 millimeter from a vending machine coil. Strike, hip-check, and tilt the machine without tripping the facility alarm!">
+  <!-- Custom inline SVG Favicon: bag of chips hanging on spiral coil -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231a1d24'/%3E%3Cpath d='M20 16 C 26 12, 38 12, 44 16 C 50 20, 50 26, 44 30 C 38 34, 26 34, 20 38' fill='none' stroke='%23f1c40f' stroke-width='4' stroke-linecap='round'/%3E%3Cpath d='M24 28 L40 26 L44 54 L20 54 Z' fill='%23e74c3c' stroke='%23c0392b' stroke-width='2'/%3E%3Cpath d='M26 34 L38 32 L39 40 L27 42 Z' fill='%23f39c12'/%3E%3Ccircle cx='32' cy='36' r='2' fill='%23ffffff'/%3E%3Ccircle cx='50' cy='14' r='5' fill='%23e74c3c'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+  <!-- canvas-confetti for victory celebration -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+  <!-- Alarm Strobes (Room Lighting effect during lockdown) -->
+  <div id="alarm-strobe-overlay" class="alarm-strobe-overlay"></div>
+
+  <!-- Shake Container wrapper -->
+  <div id="machine-wrapper" class="machine-wrapper">
+    
+    <!-- Top HUD Navigation -->
+    <header class="hud-header">
+      <div class="hud-brand">
+        <span class="hud-icon">🥨</span>
+        <div>
+          <h1 class="hud-title">STUCK SNACK RETRIEVAL</h1>
+          <div class="hud-subtitle">SNACK-O-TRON 9000 // DEPT OF HIGH TENSION SNACKING</div>
+        </div>
+      </div>
+
+      <div class="hud-stats">
+        <div class="stat-pill" title="Total snacks successfully liberated">
+          <span class="stat-label">LIBERATED:</span>
+          <span id="score-liberated" class="stat-value">0</span>
+        </div>
+        <div class="stat-pill" title="Current vending machine security status">
+          <span class="stat-label">SECURITY:</span>
+          <span id="security-badge" class="stat-badge badge-green">ARMED</span>
+        </div>
+        <button id="btn-sound" class="hud-btn" title="Toggle Synthesized Web Audio (M)">
+          🔊 <span id="sound-label">Audio ON</span>
+        </button>
+        <button id="btn-help" class="hud-btn" title="Instructions & Tactics (?)">
+          ❓ <span>Tactics</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Machine Housing -->
+    <main class="vending-machine-chassis">
+      
+      <!-- Roof Siren Bar -->
+      <div class="chassis-roof">
+        <div class="roof-vent"></div>
+        <div class="siren-beacon siren-left" id="siren-left">
+          <div class="siren-dome"></div>
+          <div class="siren-base"></div>
+        </div>
+        <div class="roof-banner">
+          <span>⚡ INDUSTRIAL HEAVY-DUTY VENDING SYSTEM ⚡</span>
+        </div>
+        <div class="siren-beacon siren-right" id="siren-right">
+          <div class="siren-dome"></div>
+          <div class="siren-base"></div>
+        </div>
+        <div class="roof-vent"></div>
+      </div>
+
+      <!-- Core Cabinet: Glass Window + Control Tower -->
+      <div class="chassis-body">
+        
+        <!-- Left: Glass Showcase -->
+        <section class="glass-cabinet" id="glass-cabinet" title="Tap or click the glass to send vibrational shockwaves!">
+          
+          <!-- Steel Lockdown Security Shutter -->
+          <div id="security-shutter" class="security-shutter">
+            <div class="shutter-slats">
+              <div class="shutter-warning">
+                <span class="warning-icon">🚨</span>
+                <h2>SECURITY LOCKDOWN</h2>
+                <p>SEISMIC THEFT ATTEMPT DETECTED</p>
+                <div class="lockdown-timer-box">
+                  <span>FACILITY POLICE DISPATCHED IN</span>
+                  <div id="lockdown-countdown" class="lockdown-countdown">10</div>
+                </div>
+                <button id="btn-reset-alarm" class="btn-reset-alarm">
+                  🔧 PAY $500 FINE & RESET BREAKER
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Glass Sheen & Smudges Layer -->
+          <div class="glass-glare-overlay"></div>
+          <div id="glass-smudges" class="glass-smudges"></div>
+
+          <!-- Interior Light Tubes -->
+          <div class="interior-light light-top"></div>
+          <div class="interior-light light-side-left"></div>
+          <div class="interior-light light-side-right"></div>
+
+          <!-- Snack Shelves Display -->
+          <div class="shelves-container">
+            
+            <!-- Shelf Row A: Sodas & Candies (Unreachable Deco) -->
+            <div class="shelf-row shelf-a">
+              <div class="shelf-bar"></div>
+              <div class="shelf-items">
+                <div class="item-slot"><div class="can can-cyber" title="Cyber Cola - A1">🥤<span class="code">A1</span></div></div>
+                <div class="item-slot"><div class="can can-neon" title="Neon Dew - A2">⚡<span class="code">A2</span></div></div>
+                <div class="item-slot"><div class="can can-void" title="Void Fizz - A3">🌌<span class="code">A3</span></div></div>
+                <div class="item-slot"><div class="can can-glitch" title="Glitch Tea - A4">👾<span class="code">A4</span></div></div>
+              </div>
+            </div>
+
+            <!-- Shelf Row B: THE STUCK SNACK ROW -->
+            <div class="shelf-row shelf-b active-shelf">
+              <div class="shelf-bar active-shelf-bar">
+                <div class="shelf-label">B3: FLAMIN' JALAPEÑO CRISPS // 99.9% DISPENSED</div>
+              </div>
+              
+              <div class="shelf-items">
+                <!-- B1 -->
+                <div class="item-slot">
+                  <div class="spiral-coil coil-dormant"></div>
+                  <div class="snack-static candy-bar" title="Protein Brick - B1">🍫<span class="code">B1</span></div>
+                </div>
+                
+                <!-- B2 -->
+                <div class="item-slot">
+                  <div class="spiral-coil coil-dormant"></div>
+                  <div class="snack-static gummy-bag" title="Gummy Atoms - B2">🍬<span class="code">B2</span></div>
+                </div>
+
+                <!-- B3: THE TARGET! -->
+                <div class="item-slot target-slot" id="target-slot">
+                  <!-- Animated 3D Spiral Coil -->
+                  <div class="coil-stage" id="coil-stage">
+                    <svg class="spiral-svg" viewBox="0 0 100 80">
+                      <defs>
+                        <linearGradient id="metal-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stop-color="#8e9eab"/>
+                          <stop offset="50%" stop-color="#eef2f3"/>
+                          <stop offset="100%" stop-color="#4a5568"/>
+                        </linearGradient>
+                      </defs>
+                      <!-- Coil Loops -->
+                      <path d="M 10 40 Q 25 15, 40 40 T 70 40 T 95 42" fill="none" stroke="url(#metal-grad)" stroke-width="7" stroke-linecap="round"/>
+                      <!-- Front Tip Hook holding by 1mm -->
+                      <circle id="coil-tip" cx="95" cy="42" r="5" fill="#f39c12"/>
+                    </svg>
+                  </div>
+
+                  <!-- The Suspended Snack Bag Container with Physics -->
+                  <div class="snack-physics-rig" id="snack-physics-rig">
+                    <div class="snack-bag flamin-chips" id="stuck-snack">
+                      <div class="bag-pinch-point" id="bag-pinch-point">
+                        <span class="pinch-spark">⚠️</span>
+                      </div>
+                      <div class="bag-foil-wrapper">
+                        <div class="bag-crimp bag-top"></div>
+                        <div class="bag-body">
+                          <div class="bag-brand">🔥 MEGA-CRUNCH 🔥</div>
+                          <div class="bag-title">FLAMIN' JALAPEÑO</div>
+                          <div class="bag-flavor">NET WT. 1.75 OZ (STUCK)</div>
+                          <div class="bag-illustration">🌶️⚡💥</div>
+                          <div class="bag-danger-tag">HANGING BY 1mm</div>
+                        </div>
+                        <div class="bag-crimp bag-bottom"></div>
+                        <div class="bag-reflection"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <span class="code code-target">B3 [STUCK]</span>
+                </div>
+
+                <!-- B4 -->
+                <div class="item-slot">
+                  <div class="spiral-coil coil-dormant"></div>
+                  <div class="snack-static pretzel-bag" title="Pretzels - B4">🥨<span class="code">B4</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Shelf Row C: Heavy Pastries -->
+            <div class="shelf-row shelf-c">
+              <div class="shelf-bar"></div>
+              <div class="shelf-items">
+                <div class="item-slot"><div class="snack-static pastry-box" title="Mega Donut - C1">🍩<span class="code">C1</span></div></div>
+                <div class="item-slot"><div class="snack-static pastry-box" title="Cinnamon Log - C2">🥐<span class="code">C2</span></div></div>
+                <div class="item-slot"><div class="snack-static pastry-box" title="Atomic Brownie - C3">🧁<span class="code">C3</span></div></div>
+                <div class="item-slot"><div class="snack-static pastry-box" title="Mystery Meat Stick - C4">🥩<span class="code">C4</span></div></div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Bottom Drop Chute / Flap -->
+          <div class="drop-zone" id="drop-zone">
+            <div class="drop-chute-darkness">
+              <div id="falling-snack-clone" class="falling-snack-clone"></div>
+            </div>
+            <div class="delivery-flap" id="delivery-flap" title="Push delivery flap">
+              <div class="flap-handle">PUSH FOR SNACKS</div>
+              <div class="flap-hinge"></div>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- Right: Tactile Control Tower & Security Console -->
+        <aside class="control-tower">
+          
+          <!-- Diagnostics LCD Screen -->
+          <div class="diag-screen">
+            <div class="screen-scanline"></div>
+            <div class="screen-header">
+              <span class="screen-dot blink"></span>
+              <span class="screen-title">SNACK-O-SYS v4.04</span>
+            </div>
+            <div class="screen-content">
+              <div class="metric-row">
+                <span class="m-label">COIL GRIP:</span>
+                <span id="lcd-grip" class="m-val text-red">0.99 mm</span>
+              </div>
+              <div class="metric-row">
+                <span class="m-label">VIBE SHOCK:</span>
+                <span id="lcd-shock" class="m-val">0.0 G</span>
+              </div>
+              <div class="metric-row">
+                <span class="m-label">STATUS:</span>
+                <span id="lcd-status" class="m-val text-yellow">SNACK AGONY</span>
+              </div>
+              <div class="metric-log" id="lcd-log">
+                &gt; READY. CHOOSE ACTION.
+              </div>
+            </div>
+          </div>
+
+          <!-- Seismic / Tilt Gauge (Analog Meter) -->
+          <div class="seismic-meter-panel">
+            <div class="gauge-title">
+              <span>SEISMIC DISTURBANCE SENSOR</span>
+              <span id="seismic-percent" class="gauge-percent">0%</span>
+            </div>
+            <div class="gauge-dial-housing">
+              <div class="gauge-track">
+                <div class="zone zone-safe" title="Safe Zone">SAFE</div>
+                <div class="zone zone-warn" title="Caution Zone">WARN</div>
+                <div class="zone zone-danger" title="Trigger Zone">ALARM</div>
+              </div>
+              <!-- Gauge needle rotated via JS -->
+              <div class="gauge-needle" id="gauge-needle"></div>
+              <div class="gauge-pivot"></div>
+            </div>
+            <!-- Rapid LED meter bar -->
+            <div class="seismic-led-bar">
+              <div class="led-pip green active"></div>
+              <div class="led-pip green active"></div>
+              <div class="led-pip green active"></div>
+              <div class="led-pip green"></div>
+              <div class="led-pip yellow"></div>
+              <div class="led-pip yellow"></div>
+              <div class="led-pip red"></div>
+              <div class="led-pip red"></div>
+              <div class="led-pip red siren-led" id="hazard-led"></div>
+            </div>
+          </div>
+
+          <!-- Primary Physical Action Buttons -->
+          <div class="action-buttons-grid">
+            
+            <!-- 1. Hip-Check Button -->
+            <button class="action-btn btn-hip" id="btn-hip" title="Slam your hip against the side of the machine (Hotkey: H)">
+              <div class="action-icon">💥</div>
+              <div class="action-info">
+                <div class="action-name">HIP-CHECK</div>
+                <div class="action-sub">Heavy side momentum // High tilt</div>
+              </div>
+              <div class="action-key">[H]</div>
+            </button>
+
+            <!-- 2. Glass Tap / Palm Strike -->
+            <button class="action-btn btn-palm" id="btn-palm" title="Smack the front glass with flat palm (Hotkey: G)">
+              <div class="action-icon">👊</div>
+              <div class="action-info">
+                <div class="action-name">PALM STRIKE</div>
+                <div class="action-sub">Glass vibration // Moderate risk</div>
+              </div>
+              <div class="action-key">[G]</div>
+            </button>
+
+            <!-- 3. Machine Tilt -->
+            <button class="action-btn btn-tilt" id="btn-tilt" title="Grip the top and lean the machine forward (Hotkey: T)">
+              <div class="action-icon">📐</div>
+              <div class="action-info">
+                <div class="action-name">FORWARD TILT</div>
+                <div class="action-sub">Gravity pull // EXTREME ALARM RISK</div>
+              </div>
+              <div class="action-key">[T]</div>
+            </button>
+
+            <!-- 4. Coin Return Hammer -->
+            <button class="action-btn btn-jiggle" id="btn-jiggle" title="Violently hammer the change return flap (Hotkey: J)">
+              <div class="action-icon">🪙</div>
+              <div class="action-info">
+                <div class="action-name">COIN JIGGLE</div>
+                <div class="action-sub">Rapid tiny clicks // Zero alarm risk</div>
+              </div>
+              <div class="action-key">[J]</div>
+            </button>
+
+          </div>
+
+          <!-- Keypad & Dollar Bill Acceptor -->
+          <div class="hardware-subpanel">
+            
+            <!-- Interactive Keypad -->
+            <div class="keypad-unit">
+              <div class="keypad-lcd" id="keypad-display">B3</div>
+              <div class="keypad-matrix">
+                <button class="key-btn" data-key="A">A</button>
+                <button class="key-btn" data-key="B">B</button>
+                <button class="key-btn" data-key="C">C</button>
+                <button class="key-btn" data-key="1">1</button>
+                <button class="key-btn" data-key="2">2</button>
+                <button class="key-btn" data-key="3">3</button>
+                <button class="key-btn" data-key="4">4</button>
+                <button class="key-btn" data-key="*">*</button>
+                <button class="key-btn" data-key="#">#</button>
+              </div>
+            </div>
+
+            <!-- Dollar Validator & Change Pocket -->
+            <div class="validator-unit">
+              <div class="dollar-slot">
+                <div class="slot-mouth"></div>
+                <div class="slot-led blink-green">INSERT $2.50</div>
+              </div>
+              
+              <div class="change-pocket" id="change-pocket" title="Hammer coin return flap">
+                <div class="pocket-flap">CHANGE / RETURN</div>
+              </div>
+
+              <!-- Easter Egg Broom Stick -->
+              <button class="easter-broom-btn" id="btn-broom" title="The Janitor's Unattended Broom Handle (Hotkey: E)">
+                🧹 <span>Broom Poke [E]</span>
+              </button>
+            </div>
+
+          </div>
+
+        </aside>
+      </div>
+
+      <!-- Chassis Kickplate -->
+      <div class="chassis-kickplate">
+        <div class="kickplate-grill"></div>
+        <div class="serial-tag">PROPERTY OF BORED AI BREAKROOM • SERIAL #SNK-2026-11</div>
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- Victory Celebration Modal -->
+  <div id="victory-modal" class="modal-overlay">
+    <div class="victory-card">
+      <div class="victory-confetti-tag">🎉 CRITICAL VICTORY 🎉</div>
+      <div class="victory-snack-art">
+        <div class="giant-chips">🌶️🥔✨</div>
+      </div>
+      <h2>SNACK LIBERATED!</h2>
+      <p id="victory-description">You defeated the cruel laws of friction without getting arrested by corporate security!</p>
+      
+      <div class="nutrition-facts">
+        <div class="nf-title">NUTRITION FACTS (STOLEN GLORY)</div>
+        <div class="nf-row"><span>Adrenaline:</span> <strong>500% DV</strong></div>
+        <div class="nf-row"><span>Vending Coil Grease:</span> <strong>0.02 mg</strong></div>
+        <div class="nf-row"><span>Moral Justification:</span> <strong>100% Valid</strong></div>
+        <div class="nf-row"><span>Cost Paid:</span> <strong>$0.00 (Pure Spite)</strong></div>
+      </div>
+
+      <div class="victory-actions">
+        <button id="btn-grab-more" class="btn-primary-glow">
+          🥨 DISPENSER NEXT STUCK SNACK
+        </button>
+        <button id="btn-share-flex" class="btn-secondary">
+          📋 COPY VICTORY RECEIPT
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tactics & Help Modal -->
+  <div id="help-modal" class="modal-overlay">
+    <div class="help-card">
+      <div class="help-header">
+        <h2>🛠️ VENDING RETRIEVAL MANUAL</h2>
+        <button id="btn-close-help" class="modal-close">&times;</button>
+      </div>
+      <div class="help-body">
+        <p><strong>MISSION:</strong> A bag of chips is pinned by 1 single millimeter of bag foil on the B3 coil. You must dislodge it before lunch hour ends.</p>
+        
+        <h3>RETRIEVAL ARSENAL</h3>
+        <ul>
+          <li><strong>💥 Hip-Check [H]:</strong> Generates massive lateral sway. High dislodge chance, but pushes seismic sensor by ~30%.</li>
+          <li><strong>👊 Palm Strike [G]:</strong> Slaps the front glass. Creates micro-crinkles on foil. Low-moderate seismic penalty.</li>
+          <li><strong>📐 Forward Tilt [T]:</strong> Tilts the machine 4 degrees forward. Gravity rips the snack loose, but tilt switches will trip the ALARM if spammed!</li>
+          <li><strong>🪙 Coin Jiggle [J]:</strong> Rattles the coin chute. Tiny micro-movements, absolutely 0% alarm risk.</li>
+          <li><strong>🧹 Broom Poke [E]:</strong> Clandestine contraband broom under the slot.</li>
+        </ul>
+
+        <h3>SECURITY SYSTEM</h3>
+        <p>Keep the <strong>Seismic Disturbance Level</strong> below <strong>100%</strong>. If it peaks, the steel security shutter slams down, police sirens engage, and you will be fined $500.</p>
+
+        <p class="easter-tip">💡 <em>Pro-tip: You can tap directly on the vending machine glass to smack it at specific coordinates!</em></p>
+      </div>
+      <div class="help-footer">
+        <button id="btn-got-it" class="btn-primary-glow">UNDERSTOOD, I'M HUNGRY</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+
+<script>window.__BORED_AI_SLUG__="stuck-snack-retrieval";</script>
+<script src="report-widget.js"></script>
+</body>
+</html>
